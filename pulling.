@@ -1,0 +1,128 @@
+import requests
+
+def get_fortnite_accounts(usernames):
+    """
+    Function to retrieve Fortnite accounts with the given usernames.
+
+    Parameters:
+    - usernames: list of str
+        A list of usernames for which Fortnite accounts are to be retrieved.
+
+    Returns:
+    - list of dict:
+        A list of dictionaries, where each dictionary represents a Fortnite account.
+        Each dictionary contains the following keys:
+        - username: str
+            The username of the Fortnite account.
+        - level: int
+            The level of the Fortnite account.
+        - wins: int
+            The number of wins of the Fortnite account.
+
+    Raises:
+    - ValueError:
+        Raises an error if the input usernames list is empty.
+    - requests.exceptions.RequestException:
+        Raises an error if there is an issue with the API request.
+    """
+
+    # Checking if the usernames list is empty
+    if not usernames:
+        raise ValueError("Usernames list cannot be empty.")
+
+    # List to store the retrieved Fortnite accounts
+    accounts = []
+
+    # Base URL for the Fortnite API
+    base_url = "https://api.fortnite.com/v1/accounts"
+
+    # Looping through each username and making API requests
+    for username in usernames:
+        try:
+            # Making the API request to retrieve the Fortnite account details
+            response = requests.get(f"{base_url}/{username}")
+
+            # Checking if the request was successful
+            if response.status_code == 200:
+                # Parsing the JSON response
+                account_data = response.json()
+
+                # Extracting the relevant information from the response
+                account = {
+                    "username": account_data["username"],
+                    "level": account_data["level"],
+                    "wins": account_data["wins"]
+                }
+
+                # Adding the account to the list
+                accounts.append(account)
+            else:
+                # Handling unsuccessful API request
+                print(f"Failed to retrieve Fortnite account for username: {username}")
+        except requests.exceptions.RequestException as e:
+            # Handling API request exception
+            print(f"Error occurred while retrieving Fortnite account for username: {username}")
+            print(f"Error details: {e}")
+
+    return accounts
+
+# Unit tests for get_fortnite_accounts function.
+
+import unittest
+
+class TestGetFortniteAccounts(unittest.TestCase):
+
+    # Tests for empty usernames list
+    def test_empty_usernames_list(self):
+        """
+        Tests if ValueError is raised when the usernames list is empty.
+        """
+        with self.assertRaises(ValueError):
+            get_fortnite_accounts([])
+
+    # Tests for successful API requests
+    def test_successful_api_requests(self):
+        """
+        Tests the retrieval of Fortnite accounts for valid usernames.
+        """
+        usernames = ["user1", "user2", "user3"]
+        accounts = get_fortnite_accounts(usernames)
+
+        # Checking if the number of retrieved accounts matches the number of usernames
+        self.assertEqual(len(accounts), len(usernames))
+
+        # Checking if the retrieved accounts have the expected keys
+        for account in accounts:
+            self.assertIn("username", account)
+            self.assertIn("level", account)
+            self.assertIn("wins", account)
+
+    # Tests for unsuccessful API requests
+    def test_unsuccessful_api_requests(self):
+        """
+        Tests the handling of unsuccessful API requests.
+        """
+        usernames = ["invalid_user1", "invalid_user2"]
+        accounts = get_fortnite_accounts(usernames)
+
+        # Checking if the number of retrieved accounts is zero
+        self.assertEqual(len(accounts), 0)
+
+# Example usage of the get_fortnite_accounts function:
+
+# Example 1: Retrieving Fortnite accounts for a list of usernames
+usernames = ["user1", "user2", "user3"]
+accounts = get_fortnite_accounts(usernames)
+
+# Printing the retrieved Fortnite accounts
+for account in accounts:
+    print(f"Username: {account['username']}")
+    print(f"Level: {account['level']}")
+    print(f"Wins: {account['wins']}")
+    print()
+
+# Example 2: Retrieving Fortnite accounts for an empty list of usernames (should raise an error)
+try:
+    accounts = get_fortnite_accounts([])
+except ValueError as e:
+    print(f"Error while retrieving Fortnite accounts: {e}")
